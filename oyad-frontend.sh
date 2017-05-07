@@ -1,14 +1,46 @@
 #!/bin/bash
 
 function sleep_time(){
-    alarm_time=$1
-    alarm_time_sec=$(date --date=$alarm_time +"%s")
-    current_time_sec=$(date +"%s")
-    if [[ $alarm_time_sec -lt $current_time_sec ]]; then
-	alarm_time_sec=$(date --date="tomorrow $alarm_time" +"%s")
+    alarm=$1
+    alarm_sec=$(date --date=$alarm +"%s")
+    current_sec=$(date +"%s")
+    if [[ $alarm_sec -lt $current_sec ]]; then
+	# alarm_time_sec=$(date --date="tomorrow $alarm_time" +"%s")
+	current_date=$(date +"%F %T")
+	current_time=$(echo $current_date | awk '{print $2}')
+	current_date=$(echo $current_date | awk '{print $1}')
+	alarm_date=$(tomorrow $current_date)
+	alarm_sec=$(date --date="$alarm_date $alarm" +"%s")
     fi
-    sleep_sec=$(($alarm_time_sec - $current_time_sec))
+    sleep_sec=$(($alarm_sec - $current_sec))
     echo $sleep_sec
+}
+
+function tomorrow() {
+    # dumbass busybox could not understand "tomorrow" and "yesterday" like phrases!!
+    today=$1
+    year=$(echo $today | cut -d"-" -f1)
+    month=$(echo $today | cut -d"-" -f2)
+    day=$(echo $today | cut -d"-" -f3)
+    day=$(( $day + 1 ))
+    date --date="$year-$month-$day" > /dev/null 2>&1
+    if [[ $? -eq 0 ]]; then
+	echo "$year-$month-$day"
+	return 0
+    else
+	day=1
+	month=$(( $month + 1 ))
+	date --date="$year-$month-$day" > /dev/null 2>&1
+	if [[ $? -eq 0 ]]; then
+	    echo "$year-$month-$day"
+	    return 0
+	else
+	    month=1
+	    year=$(( $year + 1 ))
+	fi
+    fi
+    echo "$year-$month-$day"
+    return 0
 }
 
 function single_file() {
