@@ -16,6 +16,12 @@ function single_file() {
     command="-loop 0 $song_file"
 }
 
+function dir_files() {
+    song_files=$()
+}
+
+oyad_path=$(echo $0 | rev | cut -d"/" -f2- | rev)
+
 case $2 in
     single) single_file $3;;
     playlist) ;;
@@ -24,5 +30,5 @@ case $2 in
 esac
 
 sleep $(sleep_time $1)
-bash -x ./oyad-backend.sh $command
+bash -x $oyad_path/oyad-backend.sh $command
 
