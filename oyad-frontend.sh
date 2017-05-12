@@ -6,9 +6,8 @@ function sleep_time(){
     current_sec=$(date +"%s")
     if [[ $alarm_sec -lt $current_sec ]]; then
 	# alarm_time_sec=$(date --date="tomorrow $alarm_time" +"%s")
-	current_date=$(date +"%F %T")
-	current_time=$(echo $current_date | awk '{print $2}')
-	current_date=$(echo $current_date | awk '{print $1}')
+	current_time=$(date +"%T")
+	current_date=$(date +"%F")
 	alarm_date=$(tomorrow $current_date)
 	alarm_sec=$(date --date="$alarm_date $alarm" +"%s")
     fi
@@ -18,11 +17,12 @@ function sleep_time(){
 
 function tomorrow() {
     # dumbass busybox could not understand "tomorrow" and "yesterday" like phrases!!
+    # So, I'm forced to implement this function manually!
     today=$1
     year=$(echo $today | cut -d"-" -f1)
     month=$(echo $today | cut -d"-" -f2)
     day=$(echo $today | cut -d"-" -f3)
-    day=$(( $day + 1 ))
+    day=$(($day + 1))
     date --date="$year-$month-$day" > /dev/null 2>&1
     if [[ $? -eq 0 ]]; then
 	echo "$year-$month-$day"
@@ -61,6 +61,8 @@ case $2 in
     *) ;;
 esac
 
-sleep $(sleep_time $1)
-bash -x $oyad_path/oyad-backend.sh $command
+remain_sec=$(sleep_time $1)
+sleep $remain_sec
+bash -x $oyad_path/oyad-backend.sh $command &
+echo $remain_sec
 
