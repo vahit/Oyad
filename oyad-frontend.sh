@@ -62,7 +62,7 @@ case $2 in
 esac
 
 remain_sec=$(sleep_time $1)
+echo "wait for $remain_sec secs ..."
 sleep $remain_sec
 bash -x $oyad_path/oyad-backend.sh $command &
 echo $remain_sec
-
