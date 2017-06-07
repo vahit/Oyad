@@ -1,16 +1,20 @@
 #!/bin/bash
 
+function time_checker() {
+    alarm=$1
+    alarm_sec=$(date --date="$alarm" +"%s")
+    current_sec=$(date +"%s")
+    if [[ $alarm_sec -gt $current_sec ]]; then
+	return 0
+    else
+	return 1
+    fi
+}
+
 function sleep_time(){
     alarm=$1
-    alarm_sec=$(date --date=$alarm +"%s")
+    alarm_sec=$(date --date="$alarm" +"%s")
     current_sec=$(date +"%s")
-    if [[ $alarm_sec -lt $current_sec ]]; then
-	# alarm_time_sec=$(date --date="tomorrow $alarm_time" +"%s")
-	current_time=$(date +"%T")
-	current_date=$(date +"%F")
-	alarm_date=$(tomorrow $current_date)
-	alarm_sec=$(date --date="$alarm_date $alarm" +"%s")
-    fi
     sleep_sec=$(($alarm_sec - $current_sec))
     echo $sleep_sec
 }
@@ -18,7 +22,7 @@ function sleep_time(){
 function tomorrow() {
     # dumbass busybox could not understand "tomorrow" and "yesterday" like phrases!!
     # So, I'm forced to implement this function manually!
-    today=$1
+    today=$(date +"%F")
     year=$(echo $today | cut -d"-" -f1)
     month=$(echo $today | cut -d"-" -f2)
     day=$(echo $today | cut -d"-" -f3)
@@ -52,17 +56,51 @@ function dir_files() {
     song_files=$()
 }
 
+function playlist() {
+    playlist=$1
+    command="-playlist $playlist -loop 0"
+}
+
+function playlist_generator() {
+    musics_dir=$1
+    for each_file in $(ls $musics_dir); do
+	if [[ $(file --brief $each_file | awk '{print $1}') == "directory" ]]; then
+	    playlist_generator "$musics_dir/$each_file"
+	else
+	    echo $musics_dir/$each_file >> /tmp/playlist.txt
+	fi
+    done
+    playlist /tmp/playlist.txt
+}
+
+function nop() {
+    echo "A problem occured. Please check inputs and options."
+    exit 1
+}
+
+function source_detector() {
+    source=$1
+    source_type=$(file --brief $source | cut -f1 -d " ")
+    case $source_type in
+	Audio) single_file $source ;;
+	ASCII) playlist $source ;;
+	directory) playlist_generator $source ;;
+	*) nop ;;
+    esac
+}
+
 oyad_path=$(echo $0 | rev | cut -d"/" -f2- | rev)
 
-case $2 in
-    single) single_file $3;;
-    playlist) ;;
-    random) ;;
-    *) ;;
-esac
+if $(time_checker $1) ; then
+    remain_sec=$(sleep_time $1)
+    alarm_time=$(date --date="$1")
+else
+    correct_date=$(tomorrow)
+    remain_sec=$(sleep_time "$correct_date $1")
+    alarm_time="$correct_date $1"
+fi
 
-remain_sec=$(sleep_time $1)
-echo "wait for $remain_sec secs ..."
+source_detector $2
+echo "Alarmed at $alarm_time ..."
 sleep $remain_sec
 bash -x $oyad_path/oyad-backend.sh $command &
-echo $remain_sec
