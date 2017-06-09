@@ -75,8 +75,9 @@ else
 fi
 
 rm /tmp/playlist.txt
-playlist_generator $2
+playlist_generator $2 &
 command="-shuffle -playlist /tmp/playlist.txt -loop 0"
 echo "Alarmed at $alarm_time ..."
 sleep $remain_sec
-bash -x $oyad_path/oyad-backend.sh $command &
+$oyad_path/oyad-backend.sh $command 1>/dev/null 2>&1 &
+echo "Alarming ..."
