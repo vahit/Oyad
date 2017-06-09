@@ -33,6 +33,6 @@ function volume_manager() {
 # decrease the volume level to 10%
 amixer sset Master 10% 1>/dev/null 2>&1
 
-$mplayer $mplayer_args
+$mplayer $mplayer_args &
 volume_manager
 

@@ -79,5 +79,6 @@ playlist_generator $2 &
 command="-shuffle -playlist /tmp/playlist.txt -loop 0"
 echo "Alarmed at $alarm_time ..."
 sleep $remain_sec
-$oyad_path/oyad-backend.sh $command 1>/dev/null 2>&1 &
-echo "Alarming ..."
+bash -x $oyad_path/oyad-backend.sh $command 1>/dev/null 2>&1 &
+echo "Alarming ... "
+
